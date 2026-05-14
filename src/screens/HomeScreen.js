@@ -21,6 +21,7 @@ const HomeScreen = ({ user, onLogout, isDarkMode, toggleTheme }) => {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(isDesktop);
   const [hardwareStatus, setHardwareStatus] = useState(false);
+  const [globalAlarmMode, setGlobalAlarmMode] = useState(0);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   // Dividimos las alarmas para el diseño central según la imagen
@@ -38,9 +39,13 @@ const HomeScreen = ({ user, onLogout, isDarkMode, toggleTheme }) => {
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
-    const checkStatus = async () => setHardwareStatus(await checkHardwareConnection());
+    const checkStatus = async () => {
+      const result = await checkHardwareConnection();
+      setHardwareStatus(result.connected);
+      setGlobalAlarmMode(result.alarmMode);
+    };
     checkStatus();
-    const statusInterval = setInterval(checkStatus, 5000);
+    const statusInterval = setInterval(checkStatus, 3000);
     return () => clearInterval(statusInterval);
   }, []);
 
@@ -225,6 +230,24 @@ const HomeScreen = ({ user, onLogout, isDarkMode, toggleTheme }) => {
       {isDrawerOpen && !isDesktop && (
         <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setIsDrawerOpen(false)} />
       )}
+
+      {/* EMERGENCY OVERLAY */}
+      {globalAlarmMode > 0 && (
+        <View style={styles.emergencyOverlay}>
+          <MaterialCommunityIcons name="alert-decagram" size={100} color="#FFF" />
+          <Text style={styles.emergencyOverlayText}>¡EMERGENCIA ACTIVA!</Text>
+          <Text style={styles.emergencyOverlaySubtext}>El sistema está actualmente en estado de alerta (Código: {globalAlarmMode}). Todos los vecinos han sido notificados.</Text>
+          
+          <TouchableOpacity 
+            style={styles.turnOffButton}
+            onPress={() => handleAction('APAGAR', 'SYSTEM_OFF', 'APAGAR')}
+            activeOpacity={0.8}
+          >
+            <MaterialCommunityIcons name="shield-off" size={24} color="#DC2626" />
+            <Text style={styles.turnOffButtonText}>DESARMAR SISTEMA</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -250,7 +273,7 @@ const styles = StyleSheet.create({
   
   contentArea: { flex: 1, flexDirection: 'column' },
   scrollContent: { flexGrow: 1 },
-  tabContainer: { flex: 1, paddingBottom: 20, justifyContent: 'space-between' },
+  tabContainer: { paddingBottom: 20 },
   sectionGroup: { marginBottom: 15 },
   
   // Header móvil
@@ -262,9 +285,9 @@ const styles = StyleSheet.create({
   badgeText: { color: '#FFF', fontSize: 9, fontWeight: 'bold' },
 
   // Alarm System Layout
-  alarmSystemContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 20 },
-  sideAlarmsCol: { flex: 1, justifyContent: 'space-between', alignItems: 'center', height: '100%', minHeight: 320 },
-  centerAlarmCol: { flex: 2, alignItems: 'center', justifyContent: 'center' },
+  alarmSystemContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 15 },
+  sideAlarmsCol: { flex: 1, justifyContent: 'space-between', alignItems: 'center', height: Platform.OS === 'web' ? 320 : 250 },
+  centerAlarmCol: { flex: 1.5, alignItems: 'center', justifyContent: 'center' },
   
   circularBtnContainer: { alignItems: 'center', marginVertical: 10 },
   circleIcon: { width: 65, height: 65, borderRadius: 32.5, justifyContent: 'center', alignItems: 'center', elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3 },
@@ -314,7 +337,14 @@ const styles = StyleSheet.create({
   statusTitleActive: { color: '#16A34A', fontSize: 13, fontWeight: 'bold', marginBottom: 2 },
   statusSubtitle: { fontSize: 11, lineHeight: 16 },
 
-  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 90 }
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 90 },
+
+  // Emergency Overlay
+  emergencyOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(220, 38, 38, 0.95)', zIndex: 1000, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  emergencyOverlayText: { color: '#FFF', fontSize: 32, fontWeight: '900', textAlign: 'center', marginTop: 20, letterSpacing: 2 },
+  emergencyOverlaySubtext: { color: '#FFF', fontSize: 16, textAlign: 'center', marginTop: 10, marginBottom: 40, opacity: 0.9, maxWidth: 600, lineHeight: 24 },
+  turnOffButton: { flexDirection: 'row', backgroundColor: '#FFF', paddingVertical: 15, paddingHorizontal: 30, borderRadius: 30, alignItems: 'center', elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 5 },
+  turnOffButtonText: { color: '#DC2626', fontSize: 16, fontWeight: '900', marginLeft: 10, letterSpacing: 1 },
 });
 
 export default HomeScreen;

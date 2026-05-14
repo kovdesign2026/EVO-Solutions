@@ -11,9 +11,13 @@ export const checkHardwareConnection = async () => {
     const id = setTimeout(() => controller.abort(), 2000); // 2 seg timeout
     const response = await fetch(`http://${ESP32_IP}/status`, { signal: controller.signal });
     clearTimeout(id);
-    return response.ok;
+    if (response.ok) {
+      const data = await response.json();
+      return { connected: true, alarmMode: data.alarmMode || 0 };
+    }
+    return { connected: false, alarmMode: 0 };
   } catch (e) {
-    return false;
+    return { connected: false, alarmMode: 0 };
   }
 };
 
