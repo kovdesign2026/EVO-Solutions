@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "EVO Solutions - Panel IoT",
+    "slug": "evo-solutions",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logoEvo.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#080D1A",
+    "splash": {
+      "image": "./assets/logoEvo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#080D1A"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.evosolutions.iot"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logoEvo.png",
+        "backgroundColor": "#080D1A"
+      },
+      "package": "com.evosolutions.iot",
+      "usesCleartextTraffic": true
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/logoEvo.png"
+    }
+  }
+}
